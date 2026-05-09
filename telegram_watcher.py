@@ -44,6 +44,26 @@ print(f"✅ 키워드 목록 : {KEYWORDS}")
 SESSION_FILE = str(Path(__file__).parent / "watcher_session")
 client = TelegramClient(SESSION_FILE, API_ID, API_HASH)
 
+TELEGRAM_LIMIT = 4096
+
+
+def send_alert(header: str, msg_text: str) -> bool:
+    """헤더 + 본문을 4096자 단위로 나눠서 전송"""
+    footer = "\n────────────────────"
+    first_limit = TELEGRAM_LIMIT - len(header) - len(footer)
+    ok = send_message(header + msg_text[:first_limit] + footer)
+
+    remaining = msg_text[first_limit:]
+    part = 2
+    while remaining:
+        chunk = remaining[:TELEGRAM_LIMIT]
+        remaining = remaining[TELEGRAM_LIMIT:]
+        suffix = footer if not remaining else ""
+        send_message(f"📄 <b>(이어서 {part})</b>\n{chunk}{suffix}")
+        part += 1
+
+    return ok
+
 
 async def process_unread():
     """스크립트 시작 시 모든 감시 채팅방의 미읽음 메시지를 키워드 검사 후 알림 발송"""
@@ -76,15 +96,14 @@ async def process_unread():
                         sender_name = getattr(sender, "username", None) or getattr(sender, "first_name", "알 수 없음")
                     except Exception:
                         pass
-                alert = (
+                header = (
                     f"🔔 <b>키워드 알림 (미읽음)</b>\n"
                     f"────────────────────\n"
                     f"📌 키워드 : <b>{', '.join(matched)}</b>\n"
                     f"👤 발신자 : {sender_name}\n"
-                    f"💬 내용 :\n{msg_text[:4096]}\n"
-                    f"────────────────────"
+                    f"💬 내용 :\n"
                 )
-                ok = send_message(alert)
+                ok = send_alert(header, msg_text)
                 print(f"[미읽음 알림 전송{'✅' if ok else '❌'}] 키워드={matched} | 발신={sender_name}")
                 if ok:
                     sent += 1
@@ -102,15 +121,14 @@ async def handler(event):
         sender = await event.get_sender()
         sender_name = getattr(sender, "username", None) or getattr(sender, "first_name", "알 수 없음")
 
-        alert = (
+        header = (
             f"🔔 <b>키워드 알림</b>\n"
             f"────────────────────\n"
             f"📌 키워드 : <b>{', '.join(matched)}</b>\n"
             f"👤 발신자 : {sender_name}\n"
-            f"💬 내용 :\n{msg_text[:4096]}\n"
-            f"────────────────────"
+            f"💬 내용 :\n"
         )
-        ok = send_message(alert)
+        ok = send_alert(header, msg_text)
         print(f"[알림 전송{'✅' if ok else '❌'}] 키워드={matched} | 발신={sender_name}")
 
 
