@@ -1,9 +1,11 @@
 import os
 import sys
+import asyncio
 from pathlib import Path
 from telethon import TelegramClient, events
 from dotenv import load_dotenv
 from telegram_notify import send_message
+import telegram_health
 
 # Windows 터미널 한글/이모지 출력 설정
 sys.stdout = open(sys.stdout.fileno(), mode='w', encoding='utf-8', buffering=1)
@@ -136,6 +138,7 @@ async def main():
     await client.start()
     print("👀 메시지 모니터링 시작...\n")
     await process_unread()
+    asyncio.create_task(telegram_health.run())
     await client.run_until_disconnected()
 
 
