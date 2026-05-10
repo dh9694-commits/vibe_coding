@@ -9,6 +9,7 @@ GCP e2-micro (무료 티어) 위에서 24/7 상시 실행.
 |---|---|
 | `telegram_watcher.py` | 메인 실행 파일. Telethon으로 채팅방 감시, 키워드 매칭, 알림 발송 |
 | `telegram_notify.py` | 텔레그램 Bot API HTTP 래퍼. `send_message()` 등 알림 함수 모음 |
+| `telegram_health.py` | 헬스체크 봇. 봇에 메시지 오면 정상 작동 여부 응답 |
 | `.env` | 인증 정보 및 설정값 (Git 제외) |
 | `watcher_session` | Telethon 로그인 세션 파일 (Git 제외) |
 
@@ -41,6 +42,11 @@ nano .env  # 환경변수 입력
 # tmux로 백그라운드 실행
 tmux new -s watcher
 python3 telegram_watcher.py
+# Ctrl+B → D 로 detach
+
+# 헬스체크 봇 별도 실행
+tmux new -s health
+python3 telegram_health.py
 # Ctrl+B → D 로 detach
 
 # 코드 업데이트 시
