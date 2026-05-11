@@ -58,10 +58,12 @@ def send_alert(header: str, msg_text: str) -> bool:
     remaining = msg_text[first_limit:]
     part = 2
     while remaining:
-        chunk = remaining[:TELEGRAM_LIMIT]
-        remaining = remaining[TELEGRAM_LIMIT:]
+        prefix = f"📄 <b>(이어서 {part})</b>\n"
+        chunk_limit = TELEGRAM_LIMIT - len(prefix) - len(footer)
+        chunk = remaining[:chunk_limit]
+        remaining = remaining[chunk_limit:]
         suffix = footer if not remaining else ""
-        send_message(f"📄 <b>(이어서 {part})</b>\n{chunk}{suffix}")
+        send_message(f"{prefix}{chunk}{suffix}")
         part += 1
 
     return ok
